@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using WebApiBasicTutorial.Behaviors;
+using WebApiBasicTutorial.Extensions;
 using WebApiBasicTutorial.Helper;
 using WebApiBasicTutorial.Infrastructure;
 using WebApiBasicTutorial.Injectables;
@@ -19,30 +20,16 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     var builder = WebApplication.CreateBuilder(args);
-    builder.Services.AddControllers();
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
-    builder.Host.UseSerilog((ctx, lc) => lc.ReadFrom.Configuration(ctx.Configuration));
-    builder.Services.AddMediatR(AssemblyHelper.GetAllAssemblies().ToArray());
-    var connectionString = builder.Configuration.GetConnectionString("DbServer");
-    builder.Services.AddDbContext<MyDbContext>(options => options.UseSqlServer(connectionString));
-    builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(MediatRLoggingBehavior<,>));
+    builder.Services.InitControllerAndSwagger();
+    builder.Host.AddSerilog();
 
-    builder.Services.Scan(scan => scan
-                            .FromAssemblies(AssemblyHelper.GetAllAssemblies())
-                            .AddClasses(classes => classes.AssignableTo<ITransientService>())
-                            .AsImplementedInterfaces()
-                            .WithTransientLifetime()
-                            .AddClasses(classes => classes.AssignableTo<IScopedService>())
-                            .AsImplementedInterfaces()
-                            .WithScopedLifetime()
-                            .AddClasses(classes => classes.AssignableTo<ISingletonService>())
-                            .AsImplementedInterfaces()
-                            .WithSingletonLifetime());
+    builder.Services.AddMediatR(AssemblyHelper.GetAllAssemblies().ToArray());
+    builder.Services.InitMediatR();
+    builder.Services.AddAccessDb(builder.Configuration.GetConnectionString("DbServer"));
+    builder.Services.InitScrutor();
 
     var app = builder.Build();
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerAndSwaggerUI();
     app.UseMiddleware<ApiLoggingMiddleware>();
     app.MapControllers();
     app.Run();
