@@ -5,7 +5,7 @@ This is a Web API sample based on ASPNET 6.
 
 API Test and Documentation: Swagger (Open API Spec)
 
-Logging: Serilog
+<b>Logging:</b> Serilog
 
 Event Mechanism: Mediatr
 
