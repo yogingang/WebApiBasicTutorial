@@ -5,7 +5,9 @@ using WebApiBasicTutorial.Logger;
 
 namespace WebApiBasicTutorial.Behaviors
 {
-    public class MediatRLoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+    public class MediatRLoggingBehavior<TRequest, TResponse> 
+        : IPipelineBehavior<TRequest, TResponse>
+        where TRequest : MediatR.IRequest<TResponse>
     {
         private readonly IApiLogger _logger;
 
